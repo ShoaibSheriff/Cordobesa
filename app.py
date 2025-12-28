@@ -59,7 +59,10 @@ def process_audio(audio_path):
     #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     #)
 
-    result = scribe_pipe(audio_path, return_timestamps=True, generate_kwargs={"language":"spanish", "prompt":"Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."})
+    prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
+    forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
+
+    result = scribe_pipe(audio_path, return_timestamps=True, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids})
     
     transcription = result["text"]
 
