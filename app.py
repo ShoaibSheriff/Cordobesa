@@ -55,7 +55,7 @@ def process_audio(file_path):
         return "", ""
 
     if file_path.endswith(".mp4"):
-        video = VideoFileClip(audio_path)
+        video = VideoFileClip(file_path)
         temp_audio = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
         video.audio.write_audiofile(temp_audio, verbose=False, logger=None)
         audio_path=temp_audio
