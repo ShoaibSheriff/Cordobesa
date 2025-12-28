@@ -3,7 +3,6 @@ import gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import os 
 from huggingface_hub import login 
-import whisper
 import librosa
 
 hf_token = os.getenv("HF_TOKEN")
