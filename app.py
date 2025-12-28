@@ -1,6 +1,12 @@
 import spaces
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM
+import os 
+from huggingface_hub import login 
+
+hf_token = os.getenv("HF_TOKEN")
+if hf_token:
+    login(token=hf_token)
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
