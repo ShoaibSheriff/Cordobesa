@@ -5,6 +5,8 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import os 
 from huggingface_hub import login 
 import librosa
+import moviepy.editor import VideoFileClip
+import tempfile
 
 hf_token = os.getenv("HF_TOKEN")
 if hf_token:
@@ -48,9 +50,15 @@ Please provide the output in this EXACT format:
 # --- UPDATE YOUR GENERATE FUNCTION ---
 # We modify it to handle either raw text or audio
 @spaces.GPU
-def process_audio(audio_path):
-    if audio_path is None:
+def process_audio(file_path):
+    if file_path is None:
         return "", ""
+
+    if file_path.endswith(".mp4"):
+        video = VideoFileClip(audio_path)
+        temp_audio = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
+        video.audio.write_audiofile(temp_audio, verbose=False, logger=None)
+        audio_path=temp_audio
     
     # Scribe logic with Argentinian context prompt
     # The initial_prompt helps Whisper expect 'sh' sounds and slang
@@ -62,7 +70,7 @@ def process_audio(audio_path):
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
 
-    result = scribe_pipe(audio_path, return_timestamps=True, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids})
+    result = scribe_pipe(audio_path, return_timestamps="word", chunk_length_s=30, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids})
     
     transcription = result["text"]
 
@@ -88,7 +96,7 @@ with gr.Blocks(fill_height=True, fill_width=True) as demo:
     
     with gr.Column(scale=1): 
 
-        audio_input = gr.Audio(label="Upload MP3 or Record Audio", type="filepath")
+        audio_input = gr.File(label="Upload MP3/MP4", file_types=[".mp3", ".mp4", ".wav"])
 
         # NEW: Show the scribe output on screen
         transcript_box = gr.Textbox(label="Scribe Output (Transcription)", interactive=False, lines=5)
