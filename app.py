@@ -49,7 +49,7 @@ Please provide the output in this EXACT format:
 
 # --- UPDATE YOUR GENERATE FUNCTION ---
 # We modify it to handle either raw text or audio
-@spaces.GPU
+@spaces.GPU(duration=180)
 def process_audio(file_path):
     if file_path is None:
         return "", ""
