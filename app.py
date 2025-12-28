@@ -11,7 +11,7 @@ model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", d
 def generate(text):
 
 # We tell the model specifically: "This is the user's command"
-    prompt = f"<|im_start|>user\nTranslate this text to Argentinian Spanish. Keep in mind Argentinain vocabulary. Use an informal tone. Text: {text}<|im_end|>\n<|im_start|>assistant\n"
+    prompt = f"<|im_start|>user\nTranslate this text from Argentinian Spanish to american english. Pay special attention to tone. If there are any jokes, idioms, metaphors in the text, be sure to point it out. Text: {text}<|im_end|>\n<|im_start|>assistant\n"
     
     # Prepare the input text (from your line 9-10)
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
@@ -20,7 +20,7 @@ def generate(text):
 
     outputs = model.generate(
         **inputs, 
-        max_new_tokens=150, 
+        max_new_tokens=512, 
         do_sample=False  # Better for literal translation
     )
 
