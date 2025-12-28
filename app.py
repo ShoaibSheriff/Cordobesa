@@ -3,20 +3,15 @@ import gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import os 
 from huggingface_hub import login 
+import whisper
+import librosa
 
 hf_token = os.getenv("HF_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-# Load model directly (as in your original code)
-#tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
-#model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", device_map="auto")
+scribe_model = whisper.load_model("large-v3-turbo")
 
-tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct")
-model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct", device_map="auto")
-
-# You must wrap your logic in a function to use the @spaces.GPU decorator
-@spaces.GPU
 def generate(text):
 
 # We tell the model specifically: "This is the user's command"
@@ -45,6 +40,38 @@ Please provide the output in this EXACT format:
     new_tokens = outputs[0][prompt_length:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
+
+
+# --- UPDATE YOUR GENERATE FUNCTION ---
+# We modify it to handle either raw text or audio
+@spaces.GPU
+def process_audio(audio_path):
+    if audio_path is None:
+        return "", ""
+    
+    # Scribe logic with Argentinian context prompt
+    # The initial_prompt helps Whisper expect 'sh' sounds and slang
+    result = scribe_model.transcribe(
+        audio_path, 
+        initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
+    )
+    transcription = result["text"]
+    
+    # Now feed that transcription into your existing Llama logic
+    analysis_and_translation = generate(transcription)
+    
+    return transcription, analysis_and_translation
+
+# Load model directly (as in your original code)
+#tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
+#model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", device_map="auto")
+
+tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct")
+model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct", device_map="auto")
+
+# You must wrap your logic in a function to use the @spaces.GPU decorator
+@spaces.GPU
+
 # Corrected UI Layout
 # fill_height=True expands components vertically to window height
 # fill_width=True removes side margins for a full-screen feel
@@ -52,11 +79,11 @@ with gr.Blocks(fill_height=True, fill_width=True) as demo:
     gr.Markdown("# 🇦🇷 Spanish Localizer")
     
     with gr.Column(scale=1): 
-        input_box = gr.Textbox(
-            label="Original Text", 
-            placeholder="Enter text to translate...", 
-            lines=5 
-        )
+
+        audio_input = gr.Audio(label="Upload MP3 or Record Audio", type="filepath")
+
+        # NEW: Show the scribe output on screen
+        transcript_box = gr.Textbox(label="Scribe Output (Transcription)", interactive=False, lines=5)
         
         # scale=1 is the key change to make this box grow
         output_box = gr.Textbox(
@@ -66,10 +93,16 @@ with gr.Blocks(fill_height=True, fill_width=True) as demo:
             scale=1 
         )
         
-        submit_btn = gr.Button("Translate", variant="primary")
+           # NEW: Button for Audio processing
+        audio_btn = gr.Button("Transcribe & Analyze Audio", variant="primary")
 
     # Link the button to the function
-    submit_btn.click(fn=generate, inputs=input_box, outputs=output_box)
+    # NEW: Link for audio processing
+    audio_btn.click(
+        fn=process_audio, 
+        inputs=audio_input, 
+        outputs=[transcript_box, output_box]
+    )
 
 # Final step: launch the demo that was defined in the 'with' block
 demo.launch()
