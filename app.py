@@ -59,7 +59,7 @@ def process_audio(audio_path):
     #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     #)
 
-    result = scribe_pipe(audio_path, generate_kwargs={"language":"spanish", "prompt":"Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."})
+    result = scribe_pipe(audio_path, return_timestamps=True, generate_kwargs={"language":"spanish", "prompt":"Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."})
     
     transcription = result["text"]
 
