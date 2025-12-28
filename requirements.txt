@@ -3,5 +3,5 @@ torch
 accelerate
 spaces
 gradio
-openai-whisper
+openai-whisper==20231117
 librosa
