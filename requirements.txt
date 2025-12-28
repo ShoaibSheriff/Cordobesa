@@ -4,3 +4,4 @@ accelerate
 spaces
 gradio
 librosa
+moviepy
