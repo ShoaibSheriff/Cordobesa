@@ -10,17 +10,25 @@ model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-7B-v0.2", de
 @spaces.GPU
 def generate(text):
 
-    prompt = f"Translate the following text into Argentinian Spanish. Return only the translated text, not the whole prompt. Ensure regional vocabulary and grammar are correct.\nText: {text}"
+# We tell the model specifically: "This is the user's command"
+    prompt = f"<|im_start|>user\nTranslate this text to Argentinian Spanish. Keep in mind regional vocabulary and make it sound natural. Text: {text}<|im_end|>\n<|im_start|>assistant\n"
     
     # Prepare the input text (from your line 9-10)
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
 
-    # Generate the output (from your line 14)
-    outputs = model.generate(**inputs, max_new_tokens=50)
+    prompt_length = inputs.input_ids.shape[1]
 
-    # Decode and return (from your line 17)
-    decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return decoded_output
+    outputs = model.generate(
+        **inputs, 
+        max_new_tokens=150, 
+        do_sample=False  # Better for literal translation
+    )
+
+    # --- CHANGE 3: SLICE THE OUTPUT ---
+    # We only take the tokens AFTER the prompt_length
+    new_tokens = outputs[0][prompt_length:]
+    
+    return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
 # Create the Gradio interface (required for ZeroGPU)
 demo = gr.Interface(fn=generate, inputs="text", outputs="text")
