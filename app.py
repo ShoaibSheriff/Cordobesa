@@ -1,4 +1,5 @@
 import spaces
+import torch
 import gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import os 
