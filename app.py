@@ -5,7 +5,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import os 
 from huggingface_hub import login 
 import librosa
-from moviepy.editor import VideoFileClip
+from moviepy import VideoFileClip
 import tempfile
 
 hf_token = os.getenv("HF_TOKEN")
