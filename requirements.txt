@@ -1,7 +1,6 @@
-transformers==4.44.2
+transformers>=4.45.0
 torch==2.4.0
 accelerate
 spaces
 gradio
-openai-whisper==20231117
 librosa
