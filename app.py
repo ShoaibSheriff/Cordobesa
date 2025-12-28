@@ -16,13 +16,20 @@ def generate(text):
 # We tell the model specifically: "This is the user's command"
 
     prompt = f"""<|im_start|>user
-Identify and translate the Argentinian 'porteño' nuances in this text.
+Act as an expert bilingual translator specializing in 'Rioplatense' Spanish (Argentina). 
 
-Text: "{text}"
+EXAMPLES OF DESIRED ANALYSIS:
+Example 1: "Me mandó fruta."
+1. LINGUISTIC ANALYSIS: Idiom. "Mandar fruta" literally means 'sending fruit' but culturally means talking nonsense or making things up without knowledge.
+2. ENGLISH TRANSLATION: "He was just talking nonsense."
 
-Please provide the output in this EXACT format:
-1. LINGUISTIC ANALYSIS: List any Argentinian idioms (lunfardo), metaphors, or jokes found. Explain their cultural meaning.
-2. ENGLISH TRANSLATION: A natural English version that captures the "vibe" (not just literal words).
+Example 2: "Estamos remando en dulce de leche."
+1. LINGUISTIC ANALYSIS: Metaphor. "Remar en dulce de leche" (rowing in caramel) refers to a situation that is extremely difficult or slow due to external obstacles.
+2. ENGLISH TRANSLATION: "We are fighting an uphill battle."
+
+YOUR TASK:
+Analyze and translate this text: "{text}"
+Follow the exact format of the examples above.
 <|im_end|>
 <|im_start|>assistant
 """
