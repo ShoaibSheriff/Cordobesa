@@ -3,3 +3,5 @@ torch
 accelerate
 spaces
 gradio
+openai-whisper
+librosa
