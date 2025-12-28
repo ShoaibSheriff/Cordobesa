@@ -1,6 +1,6 @@
 import spaces
 import gradio as gr
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 import os 
 from huggingface_hub import login 
 import whisper
@@ -10,7 +10,9 @@ hf_token = os.getenv("HF_TOKEN")
 if hf_token:
     login(token=hf_token)
 
-scribe_model = whisper.load_model("large-v3-turbo")
+#scribe_model = whisper.load_model("large-v3-turbo")
+
+scribe_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3-turbo", torch_dtype=torch.float16, device="cuda")
 
 @spaces.GPU
 def generate(text):
@@ -52,11 +54,15 @@ def process_audio(audio_path):
     
     # Scribe logic with Argentinian context prompt
     # The initial_prompt helps Whisper expect 'sh' sounds and slang
-    result = scribe_model.transcribe(
-        audio_path, 
-        initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
-    )
+    #result = scribe_model.transcribe(
+    #    audio_path, 
+    #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
+    #)
+
+    result = scribe_pipe(audio_path, generate_kwargs={"language":"spanish", "prompt":"Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."})
+    
     transcription = result["text"]
+
     
     # Now feed that transcription into your existing Llama logic
     analysis_and_translation = generate(transcription)
