@@ -12,6 +12,7 @@ if hf_token:
 
 scribe_model = whisper.load_model("large-v3-turbo")
 
+@spaces.GPU
 def generate(text):
 
 # We tell the model specifically: "This is the user's command"
@@ -69,8 +70,6 @@ def process_audio(audio_path):
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct")
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct", device_map="auto")
 
-# You must wrap your logic in a function to use the @spaces.GPU decorator
-@spaces.GPU
 
 # Corrected UI Layout
 # fill_height=True expands components vertically to window height
