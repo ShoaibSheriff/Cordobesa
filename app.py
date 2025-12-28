@@ -1,18 +1,24 @@
-# Use a pipeline as a high-level helper
-# Load model directly
+import spaces
+import gradio as gr
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+# Load model directly (as in your original code)
 tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
-model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
+model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", device_map="auto")
 
-# 3. Prepare the input text and convert it to model inputs (tensors)
-prompt = "How to interact with a model on Hugging Face"
-inputs = tokenizer(prompt, return_tensors="pt")
+# You must wrap your logic in a function to use the @spaces.GPU decorator
+@spaces.GPU
+def generate(prompt):
+    # Prepare the input text (from your line 9-10)
+    inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
 
-# 4. Generate the output
-# For larger models, setting device_map="auto" can help load it onto the fastest device
-outputs = model.generate(**inputs, max_new_tokens=50)
+    # Generate the output (from your line 14)
+    outputs = model.generate(**inputs, max_new_tokens=50)
 
-# 5. Decode the output tokens back into readable text
-decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
-print(decoded_output)
+    # Decode and return (from your line 17)
+    decoded_output = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return decoded_output
+
+# Create the Gradio interface (required for ZeroGPU)
+demo = gr.Interface(fn=generate, inputs="text", outputs="text")
+demo.launch()
