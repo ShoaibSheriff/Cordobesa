@@ -8,7 +8,10 @@ model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", d
 
 # You must wrap your logic in a function to use the @spaces.GPU decorator
 @spaces.GPU
-def generate(prompt):
+def generate(text):
+
+    prompt = f"Translate the following text into Argentinian Spanish. Ensure regional vocabulary and grammar are correct.\nText: {text}"
+    
     # Prepare the input text (from your line 9-10)
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
 
