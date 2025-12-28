@@ -1,5 +1,5 @@
-transformers
-torch
+transformers==4.44.2
+torch==2.4.0
 accelerate
 spaces
 gradio
