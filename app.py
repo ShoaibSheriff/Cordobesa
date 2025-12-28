@@ -16,6 +16,16 @@ if hf_token:
 
 scribe_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3-turbo", chunk_length_s=30, torch_dtype=torch.float16, device="cuda")
 
+def prepare_audio(file_path):
+    if file_path.endswith((".mp4", ".mov")):
+        print("Extracting audio on CPU...")
+        video = VideoFileClip(file_path)
+        temp_audio = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+        # CPU handles the conversion to 16kHz WAV
+        video.audio.write_audiofile(temp_audio, fps=16000, nbytes=2, codec='pcm_s16le', logger=None)
+        return temp_audio
+    return file_path
+
 @spaces.GPU
 def generate(text):
 
@@ -45,30 +55,8 @@ Please provide the output in this EXACT format:
     new_tokens = outputs[0][prompt_length:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
-
-
-# --- UPDATE YOUR GENERATE FUNCTION ---
-# We modify it to handle either raw text or audio
-@spaces.GPU(duration=180)
-def process_audio(file_path):
-    if file_path is None:
-        return "", ""
-
-    if file_path.endswith(".mp4"):
-        video = VideoFileClip(file_path)
-        temp_audio = tempfile.NamedTemporaryFile(suffix=".mp3", delete=False).name
-        video.audio.write_audiofile(temp_audio, logger=None)
-        audio_path=temp_audio
-    else :
-        audio_path=file_path
-    
-    # Scribe logic with Argentinian context prompt
-    # The initial_prompt helps Whisper expect 'sh' sounds and slang
-    #result = scribe_model.transcribe(
-    #    audio_path, 
-    #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
-    #)
-
+@spaces.GPU(duration=120)
+def scribe_audio(audio_path):
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
 
@@ -81,6 +69,21 @@ def process_audio(file_path):
     analysis_and_translation = generate(transcription)
     
     return transcription, analysis_and_translation
+
+# --- UPDATE YOUR GENERATE FUNCTION ---
+# We modify it to handle either raw text or audio
+
+def process_audio(file_path):
+   audio_path=prepare_audio(file_path)
+    
+    # Scribe logic with Argentinian context prompt
+    # The initial_prompt helps Whisper expect 'sh' sounds and slang
+    #result = scribe_model.transcribe(
+    #    audio_path, 
+    #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
+    #)
+
+   return scribe_audio(audio_path)
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
