@@ -12,7 +12,7 @@ if hf_token:
 
 #scribe_model = whisper.load_model("large-v3-turbo")
 
-scribe_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3-turbo", torch_dtype=torch.float16, device="cuda")
+scribe_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3-turbo", chunk_length_s=30, torch_dtype=torch.float16, device="cuda")
 
 @spaces.GPU
 def generate(text):
