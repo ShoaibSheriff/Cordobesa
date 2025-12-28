@@ -11,7 +11,18 @@ model = AutoModelForCausalLM.from_pretrained("Unbabel/TowerInstruct-13B-v0.1", d
 def generate(text):
 
 # We tell the model specifically: "This is the user's command"
-    prompt = f"<|im_start|>user\n 1. Translate this text from Argentinian Spanish to american english. Pay special attention to tone. 2. If there are any jokes, idioms, metaphors in the text, be sure to point it out. Text: {text}<|im_end|>\n<|im_start|>assistant\n"
+
+    prompt = f"""<|im_start|>user
+Identify and translate the Argentinian 'porteño' nuances in this text.
+
+Text: "{text}"
+
+Please provide the output in this EXACT format:
+1. LINGUISTIC ANALYSIS: List any Argentinian idioms (lunfardo), metaphors, or jokes found. Explain their cultural meaning.
+2. ENGLISH TRANSLATION: A natural English version that captures the "vibe" (not just literal words).
+<|im_end|>
+<|im_start|>assistant
+"""
     
     # Prepare the input text (from your line 9-10)
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
