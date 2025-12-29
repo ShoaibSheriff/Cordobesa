@@ -118,7 +118,7 @@ def process_audio(file_path):
     #)
 
    full_text = scribe_audio(audio_path)
-   return generate(full_text)
+   return full_text, generate(full_text)
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
