@@ -29,7 +29,7 @@ def prepare_audio(file_path):
         return temp_audio
     return file_path
 
-@spaces.GPU
+@spaces.GPU(duration=120)
 def generate(text):
 
 # We tell the model specifically: "This is the user's command"
