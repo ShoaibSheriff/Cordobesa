@@ -108,7 +108,7 @@ def scribe_audio(audio_path):
 # We modify it to handle either raw text or audio
 
 def process_audio(file_path):
-   audio_path=prepare_audio(file_path)
+    audio_path=prepare_audio(file_path)
     
     # Scribe logic with Argentinian context prompt
     # The initial_prompt helps Whisper expect 'sh' sounds and slang
