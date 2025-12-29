@@ -101,13 +101,8 @@ def scribe_audio(audio_path):
 
     result = scribe_pipe(audio_path, return_timestamps="True", chunk_length_s=30, batch_size=16, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids})
     
-    transcription = result["text"]
+    return result["text"]
 
-    
-    # Now feed that transcription into your existing Llama logic
-    analysis_and_translation = generate(transcription)
-    
-    return transcription, analysis_and_translation
 
 # --- UPDATE YOUR GENERATE FUNCTION ---
 # We modify it to handle either raw text or audio
@@ -122,7 +117,8 @@ def process_audio(file_path):
     #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     #)
 
-   return scribe_audio(audio_path)
+   full_text = scribe_audio(audio_path)
+   return generate(full_text)
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
