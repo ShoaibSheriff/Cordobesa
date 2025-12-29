@@ -5,3 +5,6 @@ spaces
 gradio
 librosa
 moviepy
+pyannote.audio
+sentence-transformers
+scikit-learn
