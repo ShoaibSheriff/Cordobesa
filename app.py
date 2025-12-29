@@ -59,9 +59,9 @@ Please provide the output in this EXACT format:
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
 
-embed_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+embed_model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
 
-def semantic_topic_chunks(text, percentile_threshold=95):
+def semantic_topic_chunks(text, percentile_threshold=80):
     # 1. Split into sentences or speaker turns
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     if len(lines) < 2:
@@ -124,6 +124,7 @@ def process_audio(file_path):
     text_by_topic = semantic_topic_chunks(full_text)
 
     for i, segment_text in enumerate(text_by_topic):
+        print(f"Analyzing topic {i+1}")
         analysis = generate(segment_text)
         final_report.append(f"### TOPIC {i+1} ANALYSIS\n{analysis}")
     return full_text, "\n\n--\n\n".join(final_report)
