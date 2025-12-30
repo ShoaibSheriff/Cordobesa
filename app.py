@@ -138,7 +138,7 @@ diarization_model.to(torch.device("cuda"))
 @spaces.GPU(duration=120)
 def scribe_audio(audio_path):
 
-    diarization_op = diarization_model(audio_path, min_speakers=1, max_speakers=3)
+    diarization_op = diarization_model(audio_path, min_speakers=2, max_speakers=3)
     
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
