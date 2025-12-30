@@ -11,6 +11,8 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from pyannote.audio import Pipeline 
+from pyannote.core import Segment
+
 
 hf_token = os.getenv("HF_TOKEN")
 if hf_token:
@@ -97,21 +99,35 @@ def semantic_topic_chunks(text, percentile_threshold=80):
 
 
 def align_speakers(whisper_results, diarization_output):
-    """Combines Whisper text chunks with Pyannote speaker labels."""
-    speaker_transcript = []
-    # whisper_results["chunks"] contains 'text' and 'timestamp' [start, end]
+    aligned_lines = []
+    
     for chunk in whisper_results["chunks"]:
-        start_t = chunk["timestamp"][0]
+        # Get Whisper's timing for this piece of text
+        start_t, end_t = chunk["timestamp"]
         text = chunk["text"].strip()
         
-        assigned_speaker = "Unknown"
-        # Search the diarization map for the speaker at this time
+        # Create a Pyannote Segment for this chunk
+        whisper_segment = Segment(start_t, end_t)
+        
+        # Track which speaker has the most 'airtime' in this chunk
+        speaker_durations = {}
+        
         for turn, _, speaker in diarization_output.itertracks(yield_label=True):
-            if turn.start <= start_t <= turn.end:
-                assigned_speaker = speaker
-                break
-        speaker_transcript.append(f"[{assigned_speaker}]: {text}")
-    return "\n".join(speaker_transcript)
+            # Calculate intersection between Whisper chunk and Speaker turn
+            intersection = turn i whisper_segment
+            if intersection:
+                speaker_durations[speaker] = speaker_durations.get(speaker, 0) + intersection.duration
+        
+        # Pick the winner, or fallback to 'Unknown' if no overlap found
+        if speaker_durations:
+            assigned_speaker = max(speaker_durations, key=speaker_durations.get)
+        else:
+            assigned_speaker = "Unknown"
+            
+        aligned_lines.append(f"[{assigned_speaker}]: {text}")
+    
+    return "\n".join(aligned_lines)
+
 
 diarization_model = Pipeline.from_pretrained(
     "pyannote/speaker-diarization-3.1", 
