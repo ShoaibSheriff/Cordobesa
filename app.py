@@ -10,6 +10,7 @@ import tempfile
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from pyannote.audio import Pipeline 
 
 hf_token = os.getenv("HF_TOKEN")
 if hf_token:
@@ -94,15 +95,42 @@ def semantic_topic_chunks(text, percentile_threshold=80):
     chunks.append("\n".join(current_chunk))
     return chunks
 
+
+def align_speakers(whisper_results, diarization_output):
+    """Combines Whisper text chunks with Pyannote speaker labels."""
+    speaker_transcript = []
+    # whisper_results["chunks"] contains 'text' and 'timestamp' [start, end]
+    for chunk in whisper_results["chunks"]:
+        start_t = chunk["timestamp"][0]
+        text = chunk["text"].strip()
+        
+        assigned_speaker = "Unknown"
+        # Search the diarization map for the speaker at this time
+        for turn, _, speaker in diarization_output.itertracks(yield_label=True):
+            if turn.start <= start_t <= turn.end:
+                assigned_speaker = speaker
+                break
+        speaker_transcript.append(f"[{assigned_speaker}]: {text}")
+    return "\n".join(speaker_transcript)
+
+diarization_model = Pipeline.from_pretrained(
+    "pyannote/speaker-diarization-3.1", 
+    token=os.getenv("HF_TOKEN") 
+)
+diarization_model.to(torch.device("cuda"))
+
 @spaces.GPU(duration=120)
 def scribe_audio(audio_path):
+
+    diarization_op = diarization_model(audio_path, min_speakers=1, max_speakers=3)
+    
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
 
     result = scribe_pipe(audio_path, return_timestamps="True", chunk_length_s=30, batch_size=16, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids})
-    
-    return result["text"]
 
+    return align_speakers(result, diarization_op)
+    
 
 # --- UPDATE YOUR GENERATE FUNCTION ---
 # We modify it to handle either raw text or audio
