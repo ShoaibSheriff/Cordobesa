@@ -114,7 +114,7 @@ def align_speakers(whisper_results, diarization_output):
         
         for turn, _, speaker in diarization_output.itertracks(yield_label=True):
             # Calculate intersection between Whisper chunk and Speaker turn
-            intersection = turn i whisper_segment
+            intersection = turn & whisper_segment
             if intersection:
                 speaker_durations[speaker] = speaker_durations.get(speaker, 0) + intersection.duration
         
