@@ -145,7 +145,9 @@ def scribe_audio(audio_path):
 
     result = scribe_pipe(audio_path, return_timestamps=True, chunk_length_s=30, batch_size=8, generate_kwargs={"language":"spanish", "prompt_ids": forced_prompt_ids, "no_repeat_ngram_size":3})
 
-    return align_speakers(result, diarization_op)
+    # return align_speakers(result, diarization_op)
+    return result
+
     
 
 # --- UPDATE YOUR GENERATE FUNCTION ---
