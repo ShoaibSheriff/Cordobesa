@@ -12,7 +12,7 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from pyannote.audio import Pipeline 
 from pyannote.core import Segment
-from IPython.display import Audio
+import shutil
 
 
 hf_token = os.getenv("HF_TOKEN")
@@ -30,7 +30,10 @@ def prepare_audio(file_path):
         temp_audio = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
         # CPU handles the conversion to 16kHz WAV
         video.audio.write_audiofile(temp_audio, fps=16000, nbytes=2, codec='pcm_s16le', logger=None)
-        Audio(temp_audio)
+        
+        # Move the temp file to your current directory so you can see it in the file explorer
+        shutil.copy(temp_audio, "check_this_audio.wav")
+        
         return temp_audio
     return file_path
 
