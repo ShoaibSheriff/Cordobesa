@@ -178,7 +178,7 @@ def process_audio(file_path):
     #     print(f"Analyzing topic {i+1}")
     #     analysis = generate(segment_text)
     #     final_report.append(f"### TOPIC {i+1} ANALYSIS\n{analysis}")
-    return full_text, "\n\n--\n\n".join(final_report)
+    return full_text, "\n\n--\n\n".join(final_report), audio_path
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
@@ -197,6 +197,9 @@ with gr.Blocks(fill_height=True, fill_width=True) as demo:
     with gr.Column(scale=1): 
 
         audio_input = gr.File(label="Upload MP3/MP4", file_types=[".mp3", ".mp4", ".wav"])
+
+        # ADD THIS: The Audio Player for debugging
+        debug_audio = gr.Audio(label="Extracted Audio (Check for glitches here)", type="filepath")
 
         # NEW: Show the scribe output on screen
         transcript_box = gr.Textbox(label="Scribe Output (Transcription)", interactive=False, lines=5)
@@ -217,7 +220,7 @@ with gr.Blocks(fill_height=True, fill_width=True) as demo:
     audio_btn.click(
         fn=process_audio, 
         inputs=audio_input, 
-        outputs=[transcript_box, output_box]
+        outputs=[transcript_box, output_box, debug_audio] # Added debug_audio here
     )
 
 # Final step: launch the demo that was defined in the 'with' block
