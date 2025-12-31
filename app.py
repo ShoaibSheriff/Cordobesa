@@ -167,12 +167,12 @@ def process_audio(file_path):
 
     full_text = scribe_audio(audio_path)
 
-    text_by_topic = semantic_topic_chunks(full_text)
+    # text_by_topic = semantic_topic_chunks(full_text)
 
-    for i, segment_text in enumerate(text_by_topic):
-        print(f"Analyzing topic {i+1}")
-        analysis = generate(segment_text)
-        final_report.append(f"### TOPIC {i+1} ANALYSIS\n{analysis}")
+    # for i, segment_text in enumerate(text_by_topic):
+    #     print(f"Analyzing topic {i+1}")
+    #     analysis = generate(segment_text)
+    #     final_report.append(f"### TOPIC {i+1} ANALYSIS\n{analysis}")
     return full_text, "\n\n--\n\n".join(final_report)
 
 # Load model directly (as in your original code)
