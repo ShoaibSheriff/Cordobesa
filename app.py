@@ -150,7 +150,7 @@ def scribe_audio(audio_path):
 
     result = scribe_pipe(audio_path, return_timestamps=True, chunk_length_s=30, stride_length_s=5, batch_size=8, generate_kwargs={"do_sample": True,                  # Add slight randomness to break loops
         "temperature": 0.2, "no_repeat_ngram_size": 6, "language":"spanish", "condition_on_prev_tokens": False, "prompt_ids": forced_prompt_ids, "no_speech_threshold": 0.6, # 0.6 is a good balance for noisy audio
-        "logprob_threshold": -1.0    # Prevents "hallucinating" words in static})
+        "logprob_threshold": -1.0  })
 
     # return align_speakers(result, diarization_op)
     return result
