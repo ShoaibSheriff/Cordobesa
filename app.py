@@ -194,7 +194,7 @@ def process_audio(file_path):
     
     # 1. Get the full transcription
     # Note: Ensure scribe_audio returns a string, not a dict
-    full_transcript = scribe_audio(audio_path)
+    full_transcript = scribe_audio(audio_path)["text"]
     
     # 2. Chunking Logic (Recursive with Overlap)
     # We target ~1500 tokens per chunk to leave room for the analysis output
