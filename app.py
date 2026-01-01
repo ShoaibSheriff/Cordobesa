@@ -61,32 +61,34 @@ def prepare_audio(file_path):
         
     return temp_audio
 
+
 @spaces.GPU(duration=120)
 def generate(text):
-
-# We tell the model specifically: "This is the user's command"
-
+    # Added context to the prompt so the model knows it's a segment
     prompt = f"""<|im_start|>user
-Identify and translate the Argentinian 'porteño' nuances in this text.
+You are an expert in Argentinian Spanish (Rioplatense). 
+Analyze the following SEGMENT of a conversation. Identify 'porteño' nuances, lunfardo, and cultural context.
 
-Text: "{text}"
+Text Segment:
+"{text}"
 
 Please provide the output in this EXACT format:
-1. LINGUISTIC ANALYSIS: List any Argentinian idioms (lunfardo), metaphors, or jokes found. Explain their cultural meaning.
-2. ENGLISH TRANSLATION: A natural English version that captures the "vibe" (not just literal words).
+1. LINGUISTIC ANALYSIS: List idioms, lunfardo, or metaphors found in this segment.
+2. ENGLISH TRANSLATION: A natural English version that captures the "vibe" (not literal).
 <|im_end|>
-<|im_start|>assistant
-"""
-    
-    # Prepare the input text (from your line 9-10)
+<|im_start|>assistant"""
+
     inputs = tokenizer(prompt, return_tensors="pt").to("cuda")
-
     prompt_length = inputs.input_ids.shape[1]
-
-      # Use a large max_new_tokens ceiling to prevent cutoffs
-    outputs = model.generate(**inputs, max_new_tokens=1024, do_sample=False)
     
-    # Slice output to remove the input text from the result box
+    # Using bfloat16 and SDPA for speed on 8B model
+    outputs = model.generate(
+        **inputs, 
+        max_new_tokens=1024, 
+        do_sample=False,
+        temperature=0.0 # Keep it precise for translation
+    )
+    
     new_tokens = outputs[0][prompt_length:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
@@ -185,30 +187,39 @@ def scribe_audio(audio_path):
 # We modify it to handle either raw text or audio
 
 def process_audio(file_path):
-    audio_path=prepare_audio(file_path)
+    if not file_path:
+        return None, "No file uploaded.", None
+        
+    audio_path = prepare_audio(file_path)
     
-    # Scribe logic with Argentinian context prompt
-    # The initial_prompt helps Whisper expect 'sh' sounds and slang
-    #result = scribe_model.transcribe(
-    #    audio_path, 
-    #    initial_prompt="Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
-    #)
+    # 1. Get the full transcription
+    # Note: Ensure scribe_audio returns a string, not a dict
+    full_transcript = scribe_audio(audio_path)
+    
+    # 2. Chunking Logic (Recursive with Overlap)
+    # We target ~1500 tokens per chunk to leave room for the analysis output
+    words = full_transcript.split()
+    chunk_size = 1500
+    overlap = 200
+    
+    chunks = []
+    for i in range(0, len(words), chunk_size - overlap):
+        chunk = " ".join(words[i : i + chunk_size])
+        chunks.append(chunk)
+        if i + chunk_size >= len(words):
+            break
 
-    final_report= []
+    # 3. Process each chunk through Llama-3
+    final_report = []
+    for i, chunk_text in enumerate(chunks):
+        print(f"Analyzing chunk {i+1}/{len(chunks)}...")
+        analysis = generate(chunk_text)
+        final_report.append(f"### PART {i+1} ANALYSIS\n{analysis}")
 
-    full_text = scribe_audio(audio_path)
-
-    full_html = "<div style='line-height: 2; font-size: 1.2em;'>"
-    full_html += full_text["text"]
-    full_html += "</div>"
-
-    # text_by_topic = semantic_topic_chunks(full_text)
-
-    # for i, segment_text in enumerate(text_by_topic):
-    #     print(f"Analyzing topic {i+1}")
-    #     analysis = generate(segment_text)
-    #     final_report.append(f"### TOPIC {i+1} ANALYSIS\n{analysis}")
-    return full_text, "\n\n--\n\n".join(final_report), audio_path
+    # Join results with a visual separator
+    full_analysis = "\n\n" + "="*30 + "\n\n".join(final_report)
+    
+    return full_transcript, full_analysis, audio_path
 
 # Load model directly (as in your original code)
 #tokenizer = AutoTokenizer.from_pretrained("Unbabel/TowerInstruct-13B-v0.1")
