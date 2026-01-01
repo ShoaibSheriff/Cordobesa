@@ -24,18 +24,42 @@ if hf_token:
 scribe_pipe = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3-turbo", chunk_length_s=30, torch_dtype=torch.float16, device="cuda")
 
 def prepare_audio(file_path):
-    if file_path.endswith((".mp4", ".mov")):
-        print("Extracting audio on CPU...")
-        video = VideoFileClip(file_path)
-        temp_audio = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
-        # CPU handles the conversion to 16kHz WAV
-        video.audio.write_audiofile(temp_audio, fps=16000, nbytes=2, codec='pcm_s16le', logger=None)
+    if not file_path:
+        return None
+    
+    # Handle Gradio file object
+    actual_path = file_path.name if hasattr(file_path, 'name') else file_path
+    
+    print("Processing audio with FFmpeg normalization...")
+    temp_audio = tempfile.NamedTemporaryFile(suffix=".wav", delete=False).name
+    
+    if actual_path.lower().endswith((".mp4", ".mov", ".mkv")):
+        video = VideoFileClip(actual_path)
+        # Normalize and convert to 16kHz Mono (WhisperX Requirement)
+        video.audio.write_audiofile(
+            temp_audio, 
+            fps=16000, 
+            nbytes=2, 
+            codec='pcm_s16le', 
+            ffmpeg_params=["-ac", "1", "-af", "loudnorm=I=-20:TP=-1.5:LRA=11"],
+            logger=None
+        )
+        video.close()
+    else:
+        # Even if it's already audio, we normalize it for better diarization
+        from moviepy.editor import AudioFileClip
+        audio = AudioFileClip(actual_path)
+        audio.write_audiofile(
+            temp_audio, 
+            fps=16000, 
+            nbytes=2, 
+            codec='pcm_s16le', 
+            ffmpeg_params=["-ac", "1", "-af", "loudnorm=I=-20:TP=-1.5:LRA=11"],
+            logger=None
+        )
+        audio.close()
         
-        # Move the temp file to your current directory so you can see it in the file explorer
-        shutil.copy(temp_audio, "check_this_audio.wav")
-        
-        return temp_audio
-    return file_path
+    return temp_audio
 
 @spaces.GPU(duration=120)
 def generate(text):
