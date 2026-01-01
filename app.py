@@ -173,6 +173,18 @@ def process_audio(file_path):
 
     full_text = scribe_audio(audio_path)
 
+    full_html = "<div style='line-height: 2; font-size: 1.2em;'>"
+    chunks = full_text.get("chunks", [])
+
+    for chunk in chunks:
+        ts = chunk["timestamp"]
+        s = ts[0] if (ts and ts[0] is not None) else 0
+        e = ts[1] if (ts and ts[1] is not None) else (s + 1)
+        text = chunk["text"].strip()
+        # Wrap each chunk in a span with timestamps
+        full_html += f'<span class="transcript-word" data-start="{s}" data-end="{e}">{text}</span> '
+    full_html += "</div>"
+
     # text_by_topic = semantic_topic_chunks(full_text)
 
     # for i, segment_text in enumerate(text_by_topic):
@@ -188,6 +200,34 @@ def process_audio(file_path):
 tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct")
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct", device_map="auto", torch_dtype=torch.bfloat16, attn_implementation="sdpa")
 
+
+head_js = """
+<script>
+window.attachHighlightLogic = function() {
+    var audio = document.querySelector('#audio-container audio');
+    var container = document.querySelector('#transcript-container');
+    if (!audio || !container) return;
+
+    audio.removeEventListener('timeupdate', window.audioSyncHandler);
+    window.audioSyncHandler = function() {
+        var currentTime = audio.currentTime;
+        var spans = container.querySelectorAll('.transcript-word');
+        spans.forEach(function(span) {
+            var start = parseFloat(span.getAttribute('data-start'));
+            var end = parseFloat(span.getAttribute('data-end'));
+            if (currentTime >= start && currentTime <= end) {
+                span.style.backgroundColor = "yellow";
+                span.style.color = "black";
+            } else {
+                span.style.backgroundColor = "transparent";
+                span.style.color = "inherit";
+            }
+        });
+    };
+    audio.addEventListener('timeupdate', window.audioSyncHandler);
+};
+</script>
+"""
 
 # Corrected UI Layout
 # fill_height=True expands components vertically to window height
