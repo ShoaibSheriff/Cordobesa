@@ -9,3 +9,4 @@ pyannote.audio
 sentence-transformers
 scikit-learn
 pyannote.audio
+ffmpeg
