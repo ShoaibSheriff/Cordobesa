@@ -199,7 +199,7 @@ def process_audio(file_path):
     full_text = scribe_audio(audio_path)
 
     full_html = "<div style='line-height: 2; font-size: 1.2em;'>"
-    full_html += full_text["text"]
+    full_html += full_text["text"]["text"]
     full_html += "</div>"
 
     # text_by_topic = semantic_topic_chunks(full_text)
