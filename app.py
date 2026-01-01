@@ -148,8 +148,9 @@ def scribe_audio(audio_path):
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
 
-    result = scribe_pipe(audio_path, return_timestamps="word", chunk_length_s=30, stride_length_s=5, batch_size=8, generate_kwargs={"do_sample": True,                  # Add slight randomness to break loops
-        "temperature": 0.2, "no_repeat_ngram_size": 6, "language":"spanish", "condition_on_prev_tokens": False, "prompt_ids": forced_prompt_ids})
+    result = scribe_pipe(audio_path, return_timestamps=True, chunk_length_s=30, stride_length_s=5, batch_size=8, generate_kwargs={"do_sample": True,                  # Add slight randomness to break loops
+        "temperature": 0.2, "no_repeat_ngram_size": 6, "language":"spanish", "condition_on_prev_tokens": False, "prompt_ids": forced_prompt_ids, "no_speech_threshold": 0.6, # 0.6 is a good balance for noisy audio
+        "logprob_threshold": -1.0    # Prevents "hallucinating" words in static})
 
     # return align_speakers(result, diarization_op)
     return result
@@ -201,33 +202,6 @@ tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct
 model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-LLama-3.1-8B-Instruct", device_map="auto", torch_dtype=torch.bfloat16, attn_implementation="sdpa")
 
 
-head_js = """
-<script>
-window.attachHighlightLogic = function() {
-    var audio = document.querySelector('#audio-container audio');
-    var container = document.querySelector('#transcript-container');
-    if (!audio || !container) return;
-
-    audio.removeEventListener('timeupdate', window.audioSyncHandler);
-    window.audioSyncHandler = function() {
-        var currentTime = audio.currentTime;
-        var spans = container.querySelectorAll('.transcript-word');
-        spans.forEach(function(span) {
-            var start = parseFloat(span.getAttribute('data-start'));
-            var end = parseFloat(span.getAttribute('data-end'));
-            if (currentTime >= start && currentTime <= end) {
-                span.style.backgroundColor = "yellow";
-                span.style.color = "black";
-            } else {
-                span.style.backgroundColor = "transparent";
-                span.style.color = "inherit";
-            }
-        });
-    };
-    audio.addEventListener('timeupdate', window.audioSyncHandler);
-};
-</script>
-"""
 
 # Corrected UI Layout
 # fill_height=True expands components vertically to window height
