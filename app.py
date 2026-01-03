@@ -98,36 +98,71 @@ def scribe_audio(audio_path):
     return result
 
 # --- Main Controller (CPU Only) ---
+# def process_audio(file_path, chunk_size, overlap):
+#     if not file_path:
+#         return None, "No file uploaded.", None
+        
+#     audio_path = prepare_audio(file_path)
+    
+#     # Run GPU transcription
+#     full_transcript = scribe_audio(audio_path)["text"]
+    
+#     # Dynamic Chunking Logic
+#     words = full_transcript.split()
+#     chunks = []
+    
+#     # Guard against infinite loops if overlap is misconfigured
+#     step = max(1, int(chunk_size - overlap))
+    
+#     for i in range(0, len(words), step):
+#         chunk = " ".join(words[i : i + int(chunk_size)])
+#         chunks.append(chunk)
+#         if i + int(chunk_size) >= len(words):
+#             break
+
+#     # Run GPU analysis for each chunk
+#     final_report = []
+#     for i, chunk_text in enumerate(chunks):
+#         analysis = generate(chunk_text)
+#         final_report.append(f"### PART {i+1} ANALYSIS\n{analysis}")
+
+#     full_analysis = "\n\n".join(final_report)
+#     return full_transcript, full_analysis, audio_path
+
 def process_audio(file_path, chunk_size, overlap):
     if not file_path:
-        return None, "No file uploaded.", None
+        yield "", "No file uploaded.", None
+        return
         
     audio_path = prepare_audio(file_path)
     
-    # Run GPU transcription
-    full_transcript = scribe_audio(audio_path)["text"]
+    # 1. GPU Transcription
+    yield "Transcribing audio... please wait.", "Analysis will appear here...", audio_path
+    scribe_output = scribe_audio(audio_path)
+    full_transcript = scribe_output["text"]
     
-    # Dynamic Chunking Logic
+    # 2. Chunking
     words = full_transcript.split()
-    chunks = []
-    
-    # Guard against infinite loops if overlap is misconfigured
     step = max(1, int(chunk_size - overlap))
-    
+    chunks = []
     for i in range(0, len(words), step):
-        chunk = " ".join(words[i : i + int(chunk_size)])
-        chunks.append(chunk)
+        chunks.append(" ".join(words[i : i + int(chunk_size)]))
         if i + int(chunk_size) >= len(words):
             break
 
-    # Run GPU analysis for each chunk
+    # 3. GPU Analysis (Streaming back to UI)
     final_report = []
     for i, chunk_text in enumerate(chunks):
+        # Update UI to show progress
+        yield full_transcript, f"Analyzing part {i+1} of {len(chunks)}...", audio_path
+        
         analysis = generate(chunk_text)
         final_report.append(f"### PART {i+1} ANALYSIS\n{analysis}")
+        
+        # Immediately show what we have so far
+        current_report = "\n\n".join(final_report)
+        yield full_transcript, current_report, audio_path
 
-    full_analysis = "\n\n".join(final_report)
-    return full_transcript, full_analysis, audio_path
 
 # --- UI Layout ---
 with gr.Blocks(fill_height=True, fill_width=True) as demo:
