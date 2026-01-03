@@ -77,7 +77,7 @@ Please provide the output in this EXACT format:
     # Using bfloat16 and SDPA for speed on 8B model
     outputs = model.generate(
         **inputs, 
-        max_new_tokens=2048, 
+        max_new_tokens=1600, 
         do_sample=False,
         temperature=0.0 # Keep it precise for translation
     )
@@ -148,7 +148,7 @@ def process_audio(file_path):
     # 2. Chunking Logic (Recursive with Overlap)
     # We target ~1500 tokens per chunk to leave room for the analysis output
     words = full_transcript.split()
-    chunk_size = 500
+    chunk_size = 750
     overlap = 100
     
     chunks = []
