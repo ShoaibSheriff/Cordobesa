@@ -3,10 +3,6 @@ torch==2.4.0
 accelerate
 spaces
 gradio
-librosa
 moviepy
-pyannote.audio
-sentence-transformers
-scikit-learn
-pyannote.audio
+huggingface_hub
 ffmpeg
