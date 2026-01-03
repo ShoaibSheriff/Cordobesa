@@ -77,7 +77,7 @@ Please provide the output in this EXACT format:
     # Using bfloat16 and SDPA for speed on 8B model
     outputs = model.generate(
         **inputs, 
-        max_new_tokens=1024, 
+        max_new_tokens=2048, 
         do_sample=False,
         temperature=0.0 # Keep it precise for translation
     )
@@ -166,7 +166,7 @@ def process_audio(file_path):
         final_report.append(f"### PART {i+1} ANALYSIS\n{analysis}")
 
     # Join results with a visual separator
-    full_analysis = "\n\n" + "="*30 + "\n\n".join(final_report)
+    full_analysis = "\n\n".join(final_report)
     
     return full_transcript, full_analysis, audio_path
 
