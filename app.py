@@ -117,16 +117,8 @@ def align_speakers(whisper_results, diarization_output):
     return "\n".join(aligned_lines)
 
 
-diarization_model = Pipeline.from_pretrained(
-    "pyannote/speaker-diarization-3.1", 
-    use_auth_token=os.getenv("HF_TOKEN") 
-)
-diarization_model.to(torch.device("cuda"))
-
 @spaces.GPU(duration=120)
 def scribe_audio(audio_path):
-
-    diarization_op = diarization_model(audio_path, num_speakers=2)
     
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
