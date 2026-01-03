@@ -1,18 +1,11 @@
-import spaces
+import os
 import torch
 import gradio as gr
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import os 
-from huggingface_hub import login 
-import librosa
-from moviepy import VideoFileClip
 import tempfile
-import numpy as np
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
-from pyannote.audio import Pipeline 
-from pyannote.core import Segment
-import shutil
+from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
+from huggingface_hub import login
+from moviepy.editor import VideoFileClip, AudioFileClip
+import spaces
 
 
 hf_token = os.getenv("HF_TOKEN")
