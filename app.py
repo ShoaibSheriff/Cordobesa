@@ -4,7 +4,7 @@ import gradio as gr
 import tempfile
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from huggingface_hub import login
-from moviepy.editor import VideoFileClip, AudioFileClip # Pinned to standard editor for stability
+from moviepy import VideoFileClip, AudioFileClip # Pinned to standard editor for stability
 import spaces
 
 # Login
