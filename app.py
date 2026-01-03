@@ -55,7 +55,7 @@ def prepare_audio(file_path):
     return temp_audio
 
 
-@spaces.GPU(duration=120)
+@spaces.GPU(duration=180)
 def generate(text):
     # Added context to the prompt so the model knows it's a segment
     prompt = f"""<|im_start|>user
@@ -117,7 +117,7 @@ def align_speakers(whisper_results, diarization_output):
     return "\n".join(aligned_lines)
 
 
-@spaces.GPU(duration=120)
+@spaces.GPU(duration=180)
 def scribe_audio(audio_path):
     
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
