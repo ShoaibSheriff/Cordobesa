@@ -148,8 +148,8 @@ def process_audio(file_path):
     # 2. Chunking Logic (Recursive with Overlap)
     # We target ~1500 tokens per chunk to leave room for the analysis output
     words = full_transcript.split()
-    chunk_size = 1500
-    overlap = 200
+    chunk_size = 500
+    overlap = 100
     
     chunks = []
     for i in range(0, len(words), chunk_size - overlap):
