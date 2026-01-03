@@ -53,7 +53,7 @@ def prepare_audio(file_path):
     clip.close()
     return temp_audio
 
-@spaces.GPU(duration=180)
+@spaces.GPU(duration=120)
 def generate(text):
     prompt = f"""<|im_start|>user
 You are an expert in Argentinian Spanish (Rioplatense). 
@@ -81,7 +81,7 @@ Please provide the output in this EXACT format:
     new_tokens = outputs[0][prompt_length:]
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
-@spaces.GPU(duration=180)
+@spaces.GPU(duration=120)
 def scribe_audio(audio_path):
     prompt_text = "Transcripción de una charla argentina con lunfardo y modismos de Buenos Aires."
     forced_prompt_ids = scribe_pipe.tokenizer.get_prompt_ids(prompt_text, return_tensors="pt").to("cuda")
