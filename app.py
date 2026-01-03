@@ -86,42 +86,6 @@ Please provide the output in this EXACT format:
     return tokenizer.decode(new_tokens, skip_special_tokens=True)
 
 
-embed_model = SentenceTransformer('sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
-
-def semantic_topic_chunks(text, percentile_threshold=80):
-    # 1. Split into sentences or speaker turns
-    lines = [line.strip() for line in text.split('\n') if line.strip()]
-    if len(lines) < 2:
-        return [text]
-
-    # 2. Get embeddings for every line
-    embeddings = embed_model.encode(lines)
-    
-    # 3. Calculate 'distances' (similarity drops) between consecutive lines
-    similarities = []
-    for i in range(len(embeddings) - 1):
-        sim = cosine_similarity([embeddings[i]], [embeddings[i+1]])[0][0]
-        similarities.append(sim)
-    
-    # 4. Identify the biggest "drops" in similarity (the topic shifts)
-    # A drop in similarity means the conversation changed direction
-    threshold = np.percentile(similarities, 100 - percentile_threshold)
-    
-    chunks = []
-    current_chunk = [lines[0]]
-    
-    for i, sim in enumerate(similarities):
-        if sim < threshold:
-            # Topic shift detected! Start a new chunk
-            chunks.append("\n".join(current_chunk))
-            current_chunk = [lines[i+1]]
-        else:
-            current_chunk.append(lines[i+1])
-            
-    chunks.append("\n".join(current_chunk))
-    return chunks
-
-
 def align_speakers(whisper_results, diarization_output):
     aligned_lines = []
     
