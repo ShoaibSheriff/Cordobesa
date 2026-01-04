@@ -58,4 +58,5 @@ This system utilizes a **Sliding Window Generator** architecture to process long
 
 ---
 
+### 📖 Screenshot
 ![App Screenshot](./screenshots/main-dashboard.jpg)
