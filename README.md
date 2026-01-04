@@ -57,3 +57,5 @@ This system utilizes a **Sliding Window Generator** architecture to process long
 4.  **Review:** Watch the transcription and English analysis stream live in the output columns.
 
 ---
+
+![App Screenshot](./screenshots/main-dashboard.png)
