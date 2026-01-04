@@ -1,4 +1,4 @@
-# &#127462; Rioplatense Decoder ➔ 🇬🇧 English Analysis
+# &#127479; Rioplatense Decoder ➔ 🇬🇧 English Analysis
 ### *Transcription & Sociolinguistic Localization Pipeline*
 
 The **Rioplatense Decoder** is a high-performance AI pipeline designed to transcribe, translate, and culturally decode the rich, complex dialects of Argentina (specifically "Porteño" Spanish). Standard translation tools often fail to capture the nuances of *lunfardo* (slang) and the specific emotional weight of Rioplatense idioms. This application solves that by combining high-fidelity speech recognition with a specialized LLM "expert" in Argentinian culture.
